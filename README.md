@@ -1,3 +1,6 @@
+## XML schema
+http://meta.stackexchange.com/questions/2677/database-schema-documentation-for-the-public-data-dump-and-sede
+
 ## StackExchange xml dump converter
 
 Creates sqlite3 db and inserts all data from specified site archive into it.
