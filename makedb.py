@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import sys
 import xml.etree.cElementTree as etree
 import logging
 
@@ -9,6 +10,8 @@ ANATHOMY = {
         'UserId': 'INTEGER',
         'Name': 'TEXT',
         'Date': 'DATETIME',
+        'Class': 'INTEGER',
+        'TagBased': 'TEXT',
     },
     'comments': {
         'Id': 'INTEGER',
@@ -25,6 +28,7 @@ ANATHOMY = {
         'ParentID': 'INTEGER',  # (only present if PostTypeId is 2)
         'AcceptedAnswerId': 'INTEGER',  # (only present if PostTypeId is 1)
         'CreationDate': 'DATETIME',
+        'DeletionDate': 'DATETIME',
         'Score': 'INTEGER',
         'ViewCount': 'INTEGER',
         'Body': 'TEXT',
@@ -110,6 +114,7 @@ ANATHOMY = {
 
 
 def dump_files(file_names, anathomy,
+               xml_path='.',
                dump_path='.',
                dump_database_name='so-dump.db',
                create_query='CREATE TABLE IF NOT EXISTS {table} ({fields})',
@@ -118,9 +123,8 @@ def dump_files(file_names, anathomy,
     logging.basicConfig(filename=os.path.join(dump_path, log_filename), level=logging.INFO)
     db = sqlite3.connect(os.path.join(dump_path, dump_database_name))
     for file in file_names:
-        print
-        "Opening {0}.xml".format(file)
-        with open(os.path.join(dump_path, file + '.xml')) as xml_file:
+        logging.info("Opening {0}.xml".format(file))
+        with open(os.path.join(xml_path, file + '.xml')) as xml_file:
             tree = etree.iterparse(xml_file)
             table_name = file
 
@@ -132,7 +136,7 @@ def dump_files(file_names, anathomy,
             try:
                 logging.info(sql_create)
                 db.execute(sql_create)
-            except Exception, e:
+            except Exception as e:
                 logging.warning(e)
 
             for events, row in tree:
@@ -144,16 +148,16 @@ def dump_files(file_names, anathomy,
                             columns=', '.join(row.attrib.keys()),
                             values=('?, ' * len(row.attrib.keys()))[:-2])
                         db.execute(query, row.attrib.values())
-                        print ".",
-                except Exception, e:
+                except Exception as e:
                     logging.warning(e)
-                    print "x",
+                    print("x")
                 finally:
                     row.clear()
-            print "\n"
+            print("\n")
             db.commit()
             del (tree)
 
 
 if __name__ == '__main__':
-    dump_files(ANATHOMY.keys(), ANATHOMY)
+    # dump_files(ANATHOMY.keys(), ANATHOMY)
+    dump_files(['tags', 'users', 'badges', 'votes', 'posts', 'comments'], ANATHOMY, xml_path = sys.argv[1], dump_path=sys.argv[2])
