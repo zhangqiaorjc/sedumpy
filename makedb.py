@@ -124,7 +124,7 @@ def dump_files(file_names, anathomy,
     db = sqlite3.connect(os.path.join(dump_path, dump_database_name))
     for file in file_names:
         logging.info("Opening {0}.xml".format(file))
-        with open(os.path.join(xml_path, file + '.xml')) as xml_file:
+        with open(os.path.join(xml_path, file.capitalize() + '.xml')) as xml_file:
             tree = etree.iterparse(xml_file)
             table_name = file
 
